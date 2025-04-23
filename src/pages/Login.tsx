@@ -1,56 +1,54 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState } from 'react';
 
-const Login = () => {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const navigate = useNavigate()
+const baseUrl = import.meta.env.VITE_REACT_APP_API_URL;
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
+function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
+  const handleLogin = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_REACT_APP_API_URL || import.meta.env.REACT_APP_API_URL}/api/login`, {
+      const response = await fetch(`${baseUrl}/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }), // assicurati che email e password esistano
+      });
 
-      if (!res.ok) throw new Error('Credenziali non valide')
+      const data = await response.json();
 
-      const data = await res.json()
-      localStorage.setItem('token', data.token)
-      navigate('/dashboard')
-    } catch (err) {
-      setError('Login fallito. Verifica le credenziali.')
+      if (response.ok) {
+        console.log('Login OK:', data);
+        // salva token, reindirizza o aggiorna lo stato globale
+      } else {
+        console.error('Errore login:', data.message);
+      }
+    } catch (error) {
+      console.error('Errore di rete:', error);
     }
-  }
+  };
 
   return (
-    <div style={{ maxWidth: '400px', margin: 'auto', paddingTop: '100px' }}>
+    <div style={{ padding: '2rem' }}>
       <h2>Login StudioMedico</h2>
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-        /><br /><br />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-        /><br /><br />
-        <button type="submit">Accedi</button>
-      </form>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        style={{ display: 'block', marginBottom: '1rem' }}
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        style={{ display: 'block', marginBottom: '1rem' }}
+      />
+      <button onClick={handleLogin}>Accedi</button>
     </div>
-  )
+  );
 }
 
-export default Login
+export default Login;
